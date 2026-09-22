@@ -72,6 +72,19 @@ Two distinct layers live in this app, and they meet in exactly one place. This m
 - **Strings**: every user-visible string is in `res/values/strings.xml` (English, the default) and `res/values-ja/strings.xml`. Keep placeholders and escaping consistent across both.
 - **WebView**: local resources are served by `popup/PopupResourceHandler` through `shouldInterceptRequest` from the `appassets.androidplatform.net` origin. Do not enable file URL access.
 
+## CI
+
+`.github/workflows/ci.yml` builds debug, runs the unit tests, and then builds
+release — the release build is where R8, resource shrinking and `lintVital` run, and
+it has broken on its own before while debug stayed green, so it is not optional.
+
+`.github/workflows/release.yml` runs on a `v*` tag and publishes a **draft** release.
+
+Both check out **only** `third_party/hoshidicts-kotlin-bridge` (recursively — it has
+its own `hoshidicts`, `xxHash` and `zstd` submodules). Never switch these to a blanket
+recursive checkout: `reference/Hoshi-Reader-Android` pins a hoshidicts commit that has
+been force-pushed off its remote, and recursing into it fails the whole checkout.
+
 ## Deliberate divergences from iOS
 
 Record any new one here.

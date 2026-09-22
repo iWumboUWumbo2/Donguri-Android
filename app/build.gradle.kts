@@ -6,6 +6,38 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// Release signing is driven by the environment so CI can supply a keystore
+// without one ever living in the repo. With none configured the release build
+// still succeeds and simply produces an unsigned APK.
+val releaseKeystorePath = providers.environmentVariable("ANDROID_KEYSTORE_FILE").orNull
+val releaseKeystorePassword = providers.environmentVariable("ANDROID_KEYSTORE_PASSWORD").orNull
+val releaseKeyAlias = providers.environmentVariable("ANDROID_KEY_ALIAS").orNull
+val releaseKeyPassword = providers.environmentVariable("ANDROID_KEY_PASSWORD").orNull
+val releaseSigningValues = listOf(
+    releaseKeystorePath,
+    releaseKeystorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword,
+)
+val isReleaseSigningRequested = releaseSigningValues.any { !it.isNullOrBlank() }
+val isReleaseSigningConfigured = releaseSigningValues.all { !it.isNullOrBlank() } &&
+    releaseKeystorePath?.let { file(it).isFile } == true
+
+// Half-configured signing is always a mistake — fail loudly rather than
+// shipping an unsigned APK that looks like a signed one.
+if (isReleaseSigningRequested && !isReleaseSigningConfigured) {
+    throw GradleException(
+        "Release signing needs ANDROID_KEYSTORE_FILE, ANDROID_KEYSTORE_PASSWORD, " +
+            "ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD, and the keystore file must exist.",
+    )
+}
+
+val releaseVersionName = providers.gradleProperty("releaseVersionName").orNull
+val releaseVersionCode = providers.gradleProperty("releaseVersionCode").orNull?.toIntOrNull()
+if (providers.gradleProperty("releaseVersionCode").isPresent && releaseVersionCode == null) {
+    throw GradleException("releaseVersionCode must be an integer.")
+}
+
 android {
     namespace = "world.wumbo.donguri"
     ndkVersion = "29.0.14206865"
@@ -19,11 +51,24 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
+        releaseVersionCode?.let { versionCode = it }
+        releaseVersionName?.let { versionName = it }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
                 targets += "hoshidicts_jni"
+            }
+        }
+    }
+
+    if (isReleaseSigningConfigured) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(releaseKeystorePath!!)
+                storePassword = releaseKeystorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
             }
         }
     }
@@ -42,6 +87,9 @@ android {
             manifestPlaceholders["appLabel"] = "どんぐり"
             ndk {
                 abiFilters += listOf("arm64-v8a")
+            }
+            if (isReleaseSigningConfigured) {
+                signingConfig = signingConfigs.getByName("release")
             }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

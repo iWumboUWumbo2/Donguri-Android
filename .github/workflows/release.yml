@@ -1,0 +1,135 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build, without the leading v (e.g. 1.2.3)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Only the dictionary engine is a build input. The repositories under
+      # reference/ are reading material, and one of them pins a commit that no
+      # longer exists upstream, so a recursive checkout of everything fails.
+      - name: Check out the hoshidicts bridge
+        run: git submodule update --init --recursive third_party/hoshidicts-kotlin-bridge
+
+      - name: Resolve the version
+        id: version
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            version="${{ github.event.inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Version must be MAJOR.MINOR.PATCH, got '$version'." >&2
+            exit 1
+          fi
+          major=${version%%.*}
+          rest=${version#*.}
+          minor=${rest%%.*}
+          patch=${rest#*.}
+          # 1.2.3 -> 10203, which keeps version codes ordered as long as minor
+          # and patch each stay below 100.
+          if [ "$minor" -gt 99 ] || [ "$patch" -gt 99 ]; then
+            echo "Minor and patch must each stay below 100 for this versionCode scheme." >&2
+            exit 1
+          fi
+          echo "name=$version" >> "$GITHUB_OUTPUT"
+          echo "code=$((10#$major * 10000 + 10#$minor * 100 + 10#$patch))" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Install the NDK and CMake
+        run: |
+          set -euo pipefail
+          sdkmanager --install "ndk;29.0.14206865" "cmake;3.31.6" > /dev/null
+
+      # Runs unconditionally: a step-level `if` cannot see a secret exported in
+      # that same step's own `env` block.
+      - name: Decode the signing keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ANDROID_KEYSTORE_BASE64:-}" ]; then
+            echo "No keystore secret is configured; the APK will be unsigned."
+            exit 0
+          fi
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Build the release APK
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          ./gradlew --no-daemon :app:assembleRelease \
+            -PreleaseVersionName='${{ steps.version.outputs.name }}' \
+            -PreleaseVersionCode='${{ steps.version.outputs.code }}'
+
+      - name: Name the APK after the release
+        id: apk
+        run: |
+          set -euo pipefail
+          built=$(find app/build/outputs/apk/release -name '*.apk' -print -quit)
+          if [ -z "$built" ]; then
+            echo "No APK was produced." >&2
+            exit 1
+          fi
+          # An unsigned APK keeps "-unsigned" in its name; carry that through so
+          # nobody mistakes one for an installable build.
+          suffix=""
+          signed=true
+          case "$built" in
+            *unsigned*) suffix="-unsigned"; signed=false ;;
+          esac
+          target="Donguri-${{ steps.version.outputs.name }}$suffix.apk"
+          mv "$built" "$target"
+          echo "path=$target" >> "$GITHUB_OUTPUT"
+          echo "signed=$signed" >> "$GITHUB_OUTPUT"
+
+      - name: Publish the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag='v${{ steps.version.outputs.name }}'
+          cat > "$RUNNER_TEMP/notes.md" <<NOTES
+          Donguri ${{ steps.version.outputs.name }} for Android (arm64-v8a).
+
+          Signed: ${{ steps.apk.outputs.signed }}
+
+          Donguri ships with no dictionaries — open **⚙︎ → Dictionaries → Download
+          recommended dictionaries** on first run.
+          NOTES
+          # Left as a draft so a human publishes it, and re-runnable: a second
+          # run for the same tag replaces the asset rather than failing.
+          if gh release view "$tag" > /dev/null 2>&1; then
+            gh release upload "$tag" '${{ steps.apk.outputs.path }}' --clobber
+          else
+            gh release create "$tag" '${{ steps.apk.outputs.path }}' \
+              --title "Donguri ${{ steps.version.outputs.name }}" \
+              --notes-file "$RUNNER_TEMP/notes.md" \
+              --draft
+          fi

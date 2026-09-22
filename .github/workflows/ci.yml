@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Only the dictionary engine is a build input. The repositories under
+      # reference/ are reading material, and one of them pins a commit that no
+      # longer exists upstream, so a recursive checkout of everything fails.
+      - name: Check out the hoshidicts bridge
+        run: git submodule update --init --recursive third_party/hoshidicts-kotlin-bridge
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Install the NDK and CMake
+        run: |
+          set -euo pipefail
+          sdkmanager --install "ndk;29.0.14206865" "cmake;3.31.6" > /dev/null
+
+      - name: Build and test
+        run: ./gradlew --no-daemon :app:assembleDebug :app:testDebugUnitTest
+
+      # The release build is where R8, resource shrinking and lintVital run, and
+      # it has broken on its own before while the debug build stayed green.
+      - name: Build release
+        run: ./gradlew --no-daemon :app:assembleRelease
+
+      - name: Upload the debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: donguri-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            app/build/reports/tests/
+            app/build/reports/lint-results-*.html
+          if-no-files-found: ignore

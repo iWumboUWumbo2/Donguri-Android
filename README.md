@@ -71,6 +71,30 @@ is skipped by default. To check it out as well:
 git submodule update --init reference/Hoshi-Reader-Android
 ```
 
+## Releases
+
+Tagging `vMAJOR.MINOR.PATCH` builds a release APK and attaches it to a draft
+GitHub release for a human to publish. `versionName` comes from the tag and
+`versionCode` is derived from it (`1.2.3` → `10203`).
+
+Signing is optional — without it the workflow still publishes, but the asset is
+named `-unsigned` and the release notes say so. To sign, set four repository
+secrets:
+
+| Secret | Contents |
+| --- | --- |
+| `ANDROID_KEYSTORE_BASE64` | `base64 -i release.jks` |
+| `ANDROID_KEYSTORE_PASSWORD` | keystore password |
+| `ANDROID_KEY_ALIAS` | key alias |
+| `ANDROID_KEY_PASSWORD` | key password |
+
+The same four are read from the environment for local release builds, so
+`ANDROID_KEYSTORE_FILE=… ./gradlew :app:assembleRelease` signs too. Setting some
+but not all of them fails the build rather than quietly producing an unsigned
+APK.
+
+Release APKs are arm64-v8a only, matching the `release` build type's ABI filter.
+
 ## Credits
 
 Donguri's dictionary and Anki functionality is **ported from
