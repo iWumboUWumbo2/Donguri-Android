@@ -15,6 +15,13 @@ to [Hoshi Reader Android](https://github.com/HuangAntimony/Hoshi-Reader-Android)
 the dictionary and Anki stack comes across from the Android port, and the reader
 is rebuilt natively in Compose.
 
+<p align="center">
+    <img src="Pictures/01_boards.png" width="24%" alt="board list">
+    <img src="Pictures/02_threads.png" width="24%" alt="thread list">
+    <img src="Pictures/03_thread.png" width="24%" alt="thread">
+    <img src="Pictures/04_popup.png" width="24%" alt="pop-up dictionary">
+</p>
+
 </div>
 
 ## Features
@@ -42,6 +49,11 @@ is rebuilt natively in Compose.
 Donguri ships with no dictionaries. On first run, open **⚙︎ → Dictionaries →
 Download recommended dictionaries** to fetch JMdict, JMnedict and the Jiten
 frequency list (~33 MB), or use **+** to import any Yomitan dictionary `.zip`.
+
+<p align="center">
+    <img src="Pictures/05_dictionaries.png" width="30%" alt="dictionary settings">
+    <img src="Pictures/06_anki.png" width="30%" alt="Anki settings">
+</p>
 
 For Anki, open **⚙︎ → Anki**. AnkiDroid is driven through its ContentProvider
 API and needs the app installed and its database permission granted; Donguri
