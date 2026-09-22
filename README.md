@@ -44,8 +44,12 @@ Download recommended dictionaries** to fetch JMdict, JMnedict and the Jiten
 frequency list (~33 MB), or use **+** to import any Yomitan dictionary `.zip`.
 
 For Anki, open **⚙︎ → Anki**. AnkiDroid is driven through its ContentProvider
-API and needs the app installed and its database permission granted;
-AnkiConnect works over HTTP.
+API and needs the app installed and its database permission granted; Donguri
+asks for that permission the first time it fetches your decks. AnkiConnect works
+over HTTP.
+
+Pick a deck and note type, then map each field to the handlebars you want —
+Lapis, Kiku and Senren note types are filled in automatically.
 
 ## Building
 

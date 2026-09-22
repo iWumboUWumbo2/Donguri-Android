@@ -27,6 +27,11 @@ coordinates: `adb shell uiautomator dump /sdcard/u.xml && adb shell cat /sdcard/
 gives each text node's `bounds`. Estimating from a screenshot misses often enough to
 look like a broken feature.
 
+AnkiDroid 2.24.1 is installed on that AVD with a local collection, so the mining path is
+testable. It needs all-files access before it will finish its first run — grant it with
+`adb shell appops set --uid com.ichi2.anki MANAGE_EXTERNAL_STORAGE allow`, then restart
+the app, since that screen does not re-read the permission on resume.
+
 The submodules are load-bearing — `git clone --recurse-submodules`, or `git submodule update --init --recursive` after a plain clone. `third_party/hoshidicts-kotlin-bridge` carries the dictionary engine's C++ source and its JNI layer, and the build will not configure without it.
 
 The first build downloads the NDK (29.0.14206865) and CMake (3.31.6) through the SDK manager, which takes a few minutes.
