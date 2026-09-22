@@ -1,6 +1,6 @@
 [submodule "reference/Donguri-iOS"]
 	path = reference/Donguri-iOS
-	url = git@github.com:iWumboUWumbo2/Donguri.git
+	url = https://github.com/iWumboUWumbo2/Donguri.git
 [submodule "third_party/hoshidicts-kotlin-bridge"]
 	path = third_party/hoshidicts-kotlin-bridge
 	url = https://github.com/HuangAntimony/hoshidicts-kotlin-bridge.git
