@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- どんぐり — acorn brown, the app's accent seed. -->
+    <color name="donguri_seed">#FF8D5A2B</color>
+</resources>

@@ -1,0 +1,10 @@
+[submodule "reference/Donguri-iOS"]
+	path = reference/Donguri-iOS
+	url = git@github.com:iWumboUWumbo2/Donguri.git
+[submodule "third_party/hoshidicts-kotlin-bridge"]
+	path = third_party/hoshidicts-kotlin-bridge
+	url = https://github.com/HuangAntimony/hoshidicts-kotlin-bridge.git
+	branch = codex/hoshidicts-multilingual-bridge
+[submodule "reference/Hoshi-Reader-Android"]
+	path = reference/Hoshi-Reader-Android
+	url = https://github.com/HuangAntimony/Hoshi-Reader-Android.git

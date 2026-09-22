@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">Donguri</string>
+    <string name="five_channel" translatable="false">5ch</string>
+
+    <!-- Generic -->
+    <string name="back">Back</string>
+    <string name="clear">Clear</string>
+    <string name="close">Close</string>
+    <string name="retry">Retry</string>
+    <string name="filter">Filter</string>
+    <string name="please_wait">Please wait…</string>
+    <string name="error_occurred">Something went wrong</string>
+    <string name="refresh">Refresh</string>
+
+    <!-- Board menu / board list -->
+    <string name="dictionary">Dictionary</string>
+    <string name="settings">Settings</string>
+    <string name="untitled_thread">Untitled</string>
+    <string name="no_board_information">No board information</string>
+    <string name="no_thread_information">No thread or board information</string>
+    <string name="unread_count">+%1$d</string>
+
+    <!-- Thread -->
+    <string name="aborn">Deleted</string>
+    <string name="replies">Replies</string>
+    <string name="reply_count">%1$d replies</string>
+    <string name="jump_to_res">Jump to &gt;&gt;%1$d</string>
+    <string name="posts_by_id">%1$d posts from ID:%2$s</string>
+    <string name="posts_by_trip">%1$d posts from ◆%2$s</string>
+    <string name="clear_highlight">Clear highlight</string>
+    <string name="translate">Translate</string>
+    <string name="ng_this_id">Filter this ID</string>
+    <string name="ng_this_name">Filter this name</string>
+    <string name="report_post">Report</string>
+    <string name="copy_post">Copy text</string>
+    <string name="copied">Copied</string>
+
+    <!-- Settings -->
+    <string name="settings_dictionaries">Dictionaries</string>
+    <string name="settings_anki">Anki</string>
+    <string name="settings_ng_filter">NG filter</string>
+    <string name="settings_custom_css">Custom CSS</string>
+    <string name="settings_popup">Pop-up dictionary</string>
+    <string name="settings_audio">Audio</string>
+    <string name="dictionary_import">Import dictionary</string>
+    <string name="dictionary_update">Check for updates</string>
+    <string name="dictionary_download_recommended">Download recommended dictionaries</string>
+    <string name="dictionary_none">None installed</string>
+    <string name="dictionary_delete">Delete</string>
+    <string name="dictionary_move_up">Move up</string>
+    <string name="dictionary_move_down">Move down</string>
+    <string name="dictionary_type_term">Term</string>
+    <string name="dictionary_type_frequency">Frequency</string>
+    <string name="dictionary_type_pitch">Pitch accent</string>
+    <string name="dictionary_search_placeholder">Search</string>
+    <string name="dictionary_no_results">No results</string>
+    <string name="dictionary_no_dictionaries">No dictionaries installed yet. Import one from settings.</string>
+    <!-- Anki -->
+    <string name="anki_fetch_api_unavailable">AnkiDroid is unavailable. Install AnkiDroid, then try again.</string>
+    <string name="anki_fetch_permission_denied">AnkiDroid database access was denied. Grant the permission to fetch decks and note types.</string>
+    <string name="anki_fetch_deck_list_unavailable">Unable to read AnkiDroid decks. Open AnkiDroid and try again.</string>
+    <string name="anki_fetch_model_list_unavailable">Unable to read AnkiDroid note types. Open AnkiDroid and try again.</string>
+    <string name="anki_fetch_model_fields_unavailable">Unable to read fields for one or more AnkiDroid note types.</string>
+    <string name="anki_fetch_provider_failure">Anki did not respond. Open it and try again.</string>
+    <string name="anki_backend">Backend</string>
+    <string name="anki_backend_ankidroid">AnkiDroid</string>
+    <string name="anki_backend_ankiconnect">AnkiConnect</string>
+    <string name="anki_connect">AnkiConnect</string>
+    <string name="anki_connect_url">Server URL</string>
+    <string name="anki_connect_api_key">API key</string>
+    <string name="anki_connect_force_sync">Sync after adding a card</string>
+    <string name="anki_fetch">Fetch decks and note types</string>
+    <string name="anki_deck">Deck</string>
+    <string name="anki_note_type">Note type</string>
+    <string name="anki_tags">Tags</string>
+    <string name="anki_allow_duplicates">Allow duplicates</string>
+    <string name="anki_duplicate_scope">Duplicate scope</string>
+    <string name="anki_duplicate_scope_collection">Collection</string>
+    <string name="anki_duplicate_scope_deck">Deck</string>
+    <string name="anki_duplicate_scope_deck_root">Deck root</string>
+    <string name="anki_compact_glossaries">Compact glossaries on cards</string>
+    <string name="anki_fields">Fields</string>
+    <string name="anki_apply_template">Apply template for %1$s</string>
+    <string name="anki_not_configured">Choose a deck and note type first</string>
+    <string name="anki_card_added">Card added</string>
+    <string name="anki_card_duplicate">Already in your collection</string>
+    <string name="anki_card_failed">Could not add the card</string>
+    <string name="anki_permission_needed">AnkiDroid permission needed</string>
+    <string name="ng_kind_word">Word</string>
+    <string name="ng_kind_id">ID</string>
+    <string name="ng_kind_name">Name</string>
+    <string name="ng_add">Add</string>
+    <string name="ng_pattern_placeholder">Text to filter</string>
+    <string name="css_editor_hint">CSS applied to the pop-up dictionary</string>
+    <string name="css_reset">Reset</string>
+    <string name="popup_width">Width</string>
+    <string name="popup_height">Height</string>
+    <string name="popup_scale">Scale</string>
+    <string name="popup_full_width">Full width</string>
+    <string name="popup_swipe_to_dismiss">Swipe to dismiss</string>
+    <string name="popup_swipe_threshold">Swipe threshold</string>
+    <string name="popup_max_results">Maximum results</string>
+    <string name="popup_scan_length">Scan length</string>
+    <string name="popup_scan_non_japanese">Scan non-Japanese text</string>
+    <string name="popup_two_column">Two-column glossaries</string>
+    <string name="popup_compact_glossaries">Compact glossaries</string>
+    <string name="popup_show_expression_tags">Show expression tags</string>
+    <string name="popup_harmonic_frequency">Harmonic mean frequency</string>
+    <string name="popup_deduplicate_pitch">Deduplicate pitch accents</string>
+    <string name="popup_compact_pitch">Compact pitch accents</string>
+    <string name="popup_collapse_mode">Collapse dictionaries</string>
+    <string name="popup_collapse_expand_all">Expand all</string>
+    <string name="popup_collapse_collapse_all">Collapse all</string>
+    <string name="popup_collapse_custom">Custom</string>
+    <string name="popup_expand_first">Always expand the first dictionary</string>
+    <string name="dictionary_auto_update">Update dictionaries automatically</string>
+    <string name="dictionary_update_interval">Update interval</string>
+    <string name="dictionary_low_ram_import">Low-memory import</string>
+    <string name="audio_autoplay">Play audio automatically</string>
+    <string name="audio_sources">Audio sources</string>
+    <string name="audio_source_add">Add source</string>
+    <string name="audio_source_url">Source URL</string>
+    <string name="audio_source_name">Name</string>
+</resources>
