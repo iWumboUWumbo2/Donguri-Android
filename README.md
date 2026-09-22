@@ -81,7 +81,7 @@ files retain their original copyright and SPDX headers.
 | `assets/donguri-web/popup/*`, `shared/*` | Hoshi Reader Android `assets/hoshi-web/` (verbatim) |
 | `popup/PopupHtml.kt`, `PopupEntryJson.kt`, `PopupLayout.kt`, `PopupResourceHandler.kt` | Hoshi Reader Android `features/dictionary/LookupPopup*.kt` |
 | `dictionary/*` | Hoshi Reader Android `dictionary/` |
-| `de/manhhao/hoshi/HoshiDicts.kt` | Hoshi Reader Android (verbatim) |
+| `de/manhhao/hoshi/HoshiDicts.kt` | `third_party/hoshidicts-kotlin-bridge` (verbatim — must match it exactly) |
 | `features/anki/*` | Hoshi Reader Android `features/anki/` |
 | `features/dictionary/*` | Hoshi Reader Android `features/dictionary/` |
 | `lookup/TextScanner.kt` | Hoshi Reader `selection.js` (scanning logic, ported to Kotlin) |
