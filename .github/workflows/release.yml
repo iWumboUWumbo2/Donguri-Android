@@ -129,12 +129,23 @@ jobs:
           echo "path=$target" >> "$GITHUB_OUTPUT"
           echo "signed=$signed" >> "$GITHUB_OUTPUT"
 
+      # Also published as a workflow artifact: artifacts are visible on the run
+      # page without publishing anything, which makes a release problem easy to
+      # tell apart from a build problem.
+      - name: Upload the APK as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: donguri-${{ steps.version.outputs.name }}-apk
+          path: ${{ steps.apk.outputs.path }}
+          if-no-files-found: error
+
       - name: Publish the draft release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           tag='v${{ steps.version.outputs.name }}'
+          apk='${{ steps.apk.outputs.path }}'
           cat > "$RUNNER_TEMP/notes.md" <<NOTES
           Donguri ${{ steps.version.outputs.name }} for Android (arm64-v8a).
 
@@ -146,10 +157,22 @@ jobs:
           # Left as a draft so a human publishes it, and re-runnable: a second
           # run for the same tag replaces the asset rather than failing.
           if gh release view "$tag" > /dev/null 2>&1; then
-            gh release upload "$tag" '${{ steps.apk.outputs.path }}' --clobber
+            echo "Release $tag already exists; uploading the APK to it."
+            gh release upload "$tag" "$apk" --clobber
           else
-            gh release create "$tag" '${{ steps.apk.outputs.path }}' \
+            echo "Creating draft release $tag."
+            gh release create "$tag" "$apk" \
               --title "Donguri ${{ steps.version.outputs.name }}" \
               --notes-file "$RUNNER_TEMP/notes.md" \
               --draft
+          fi
+
+          # Prove what actually ended up attached, rather than trusting the
+          # exit status of the command above.
+          echo "Assets now on $tag:"
+          gh release view "$tag" --json assets \
+            --jq '.assets[] | "  \(.name) (\(.size) bytes)"'
+          if [ "$(gh release view "$tag" --json assets --jq '[.assets[] | select(.name | endswith(".apk"))] | length')" = "0" ]; then
+            echo "No APK is attached to $tag." >&2
+            exit 1
           fi
