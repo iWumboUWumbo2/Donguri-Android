@@ -8,3 +8,7 @@
 [submodule "reference/Hoshi-Reader-Android"]
 	path = reference/Hoshi-Reader-Android
 	url = https://github.com/HuangAntimony/Hoshi-Reader-Android.git
+	# Reading material, not a build input. Left uninitialised by default
+	# because its own hoshidicts submodule is pinned to a commit that has
+	# been force-pushed off that remote, which fails a recursive clone.
+	update = none
