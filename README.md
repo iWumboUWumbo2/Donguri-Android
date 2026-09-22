@@ -60,6 +60,13 @@ git clone --recurse-submodules <this repo>
 `third_party/hoshidicts-kotlin-bridge` is a submodule and carries the dictionary
 engine — the build will not configure without it.
 
+`reference/Hoshi-Reader-Android` is reading material rather than a build input, and
+is skipped by default. To check it out as well:
+
+```bash
+git submodule update --init reference/Hoshi-Reader-Android
+```
+
 ## Credits
 
 Donguri's dictionary and Anki functionality is **ported from
