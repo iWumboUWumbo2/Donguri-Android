@@ -62,7 +62,27 @@ jobs:
       - name: Install the NDK and CMake
         run: |
           set -euo pipefail
-          sdkmanager --install "ndk;29.0.14206865" "cmake;3.31.6" > /dev/null
+          # The runner image does not reliably put cmdline-tools on PATH, so
+          # find sdkmanager rather than assuming it.
+          sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          sdkmanager_bin=""
+          for candidate in \
+            "$(command -v sdkmanager || true)" \
+            "$sdk_root/cmdline-tools/latest/bin/sdkmanager" \
+            "$sdk_root/tools/bin/sdkmanager"; do
+            if [ -n "$candidate" ] && [ -x "$candidate" ]; then
+              sdkmanager_bin="$candidate"
+              break
+            fi
+          done
+          if [ -z "$sdkmanager_bin" ]; then
+            echo "Could not find sdkmanager under '$sdk_root'." >&2
+            ls -la "$sdk_root" "$sdk_root/cmdline-tools" 2>/dev/null || true
+            exit 1
+          fi
+          echo "Using $sdkmanager_bin"
+          yes | "$sdkmanager_bin" --licenses > /dev/null 2>&1 || true
+          "$sdkmanager_bin" --install "ndk;29.0.14206865" "cmake;3.31.6"
 
       # Runs unconditionally: a step-level `if` cannot see a secret exported in
       # that same step's own `env` block.
