@@ -129,13 +129,31 @@ jobs:
           echo "path=$target" >> "$GITHUB_OUTPUT"
           echo "signed=$signed" >> "$GITHUB_OUTPUT"
 
+      # An APK the build believes it signed but that does not verify would
+      # otherwise reach people as a broken download.
+      - name: Verify the APK signature
+        run: |
+          set -euo pipefail
+          apk='${{ steps.apk.outputs.path }}'
+          apksigner=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)
+          if [ -z "$apksigner" ]; then
+            echo "Could not find apksigner under $ANDROID_HOME/build-tools." >&2
+            exit 1
+          fi
+          if [ '${{ steps.apk.outputs.signed }}' != 'true' ]; then
+            echo "::warning::No keystore was configured, so $apk is unsigned and cannot be installed."
+            exit 0
+          fi
+          "$apksigner" verify --print-certs "$apk"
+
       # Also published as a workflow artifact: artifacts are visible on the run
       # page without publishing anything, which makes a release problem easy to
-      # tell apart from a build problem.
+      # tell apart from a build problem. The name carries the signing state so
+      # it is obvious at a glance whether the build is installable.
       - name: Upload the APK as a workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: donguri-${{ steps.version.outputs.name }}-apk
+          name: donguri-${{ steps.version.outputs.name }}-${{ steps.apk.outputs.signed == 'true' && 'signed' || 'unsigned' }}-apk
           path: ${{ steps.apk.outputs.path }}
           if-no-files-found: error
 
