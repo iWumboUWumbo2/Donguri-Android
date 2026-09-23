@@ -9,3 +9,11 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Signing keys never belong in the repository. CI gets the keystore from the
+# ANDROID_KEYSTORE_BASE64 secret; local release builds point at one outside it
+# through ANDROID_KEYSTORE_FILE.
+*.jks
+*.keystore
+*.p12
+keystore.properties
