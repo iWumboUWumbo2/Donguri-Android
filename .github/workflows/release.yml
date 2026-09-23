@@ -157,7 +157,16 @@ jobs:
           # Left as a draft so a human publishes it, and re-runnable: a second
           # run for the same tag replaces the asset rather than failing.
           if gh release view "$tag" > /dev/null 2>&1; then
-            echo "Release $tag already exists; uploading the APK to it."
+            echo "Release $tag already exists; replacing its APKs."
+            # Not just --clobber: a rebuild can change the asset's name (an
+            # unsigned build carries a -unsigned suffix), and the stale one
+            # would otherwise sit alongside the new build.
+            gh release view "$tag" --json assets \
+              --jq '.assets[] | select(.name | endswith(".apk")) | .name' \
+              | while read -r stale; do
+                  echo "Removing stale asset $stale"
+                  gh release delete-asset "$tag" "$stale" --yes
+                done
             gh release upload "$tag" "$apk" --clobber
           else
             echo "Creating draft release $tag."
