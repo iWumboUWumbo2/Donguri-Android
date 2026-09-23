@@ -98,6 +98,64 @@ jobs:
           printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
           echo "ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
 
+      # Gradle reports a signing mistake from deep inside the build, where the
+      # cause is hard to pick out. Check the keystore up front so a wrong
+      # password, a wrong alias and a missing secret each say so plainly.
+      # GitHub masks secret values in logs, so nothing here leaks one.
+      - name: Check the signing configuration
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -uo pipefail
+          keystore="${ANDROID_KEYSTORE_FILE:-}"
+          if [ -z "$keystore" ]; then
+            echo "No ANDROID_KEYSTORE_BASE64 secret is set; this build will be unsigned."
+            exit 0
+          fi
+
+          missing=""
+          [ -n "${ANDROID_KEYSTORE_PASSWORD:-}" ] || missing="$missing ANDROID_KEYSTORE_PASSWORD"
+          [ -n "${ANDROID_KEY_ALIAS:-}" ] || missing="$missing ANDROID_KEY_ALIAS"
+          [ -n "${ANDROID_KEY_PASSWORD:-}" ] || missing="$missing ANDROID_KEY_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "A keystore is configured but these secrets are empty or misnamed:$missing" >&2
+            echo "Secret names are case sensitive and must match exactly." >&2
+            exit 1
+          fi
+
+          echo "Keystore is $(wc -c < "$keystore") bytes."
+          case "$ANDROID_KEYSTORE_PASSWORD" in
+            *[[:space:]]) echo "::warning::ANDROID_KEYSTORE_PASSWORD ends with whitespace, which is usually a copy-paste slip." ;;
+          esac
+          case "$ANDROID_KEY_ALIAS" in
+            *[[:space:]]) echo "::warning::ANDROID_KEY_ALIAS ends with whitespace, which is usually a copy-paste slip." ;;
+          esac
+
+          if ! keytool -list -keystore "$keystore" -storepass "$ANDROID_KEYSTORE_PASSWORD" > "$RUNNER_TEMP/aliases.txt" 2> "$RUNNER_TEMP/keytool.err"; then
+            echo "Could not open the keystore." >&2
+            echo "That is normally a wrong ANDROID_KEYSTORE_PASSWORD, or an ANDROID_KEYSTORE_BASE64 that did not survive copy and paste." >&2
+            cat "$RUNNER_TEMP/keytool.err" >&2
+            exit 1
+          fi
+
+          if ! grep -q "^$ANDROID_KEY_ALIAS," "$RUNNER_TEMP/aliases.txt"; then
+            echo "ANDROID_KEY_ALIAS is not in this keystore. It holds:" >&2
+            grep -E 'Entry|エントリ' "$RUNNER_TEMP/aliases.txt" | sed 's/^/  /' >&2
+            exit 1
+          fi
+
+          # keytool writes PKCS12 keystores, where the key password is the store
+          # password; a different ANDROID_KEY_PASSWORD would fail in Gradle.
+          if [ "$ANDROID_KEY_PASSWORD" != "$ANDROID_KEYSTORE_PASSWORD" ]; then
+            echo "ANDROID_KEY_PASSWORD differs from ANDROID_KEYSTORE_PASSWORD." >&2
+            echo "keytool produces PKCS12 keystores, which use one password for both; set them to the same value." >&2
+            exit 1
+          fi
+
+          echo "Signing configuration looks good."
+
       - name: Build the release APK
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
